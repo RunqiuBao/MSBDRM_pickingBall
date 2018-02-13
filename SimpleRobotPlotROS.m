@@ -1,7 +1,7 @@
 function [ Xout ] = SimpleRobotPlotROS( u )
 %SIMPLEROBOTPLOT Summary of this function goes here
 persistent  jointpub jointmsg counter tftree tfStampedMsg tfStampedMsg1 tfStampedMsg2 tfStampedMsg3
-persistent  tfStampedMsgcm1 tfStampedMsgcm2 tfStampedMsgcm3 tfStampedMsgtar
+persistent  tfStampedMsgcm1 tfStampedMsgcm2 tfStampedMsgcm3
 
 %Joint Position
 q1=u(1);
@@ -29,16 +29,10 @@ L11=u(17);
 %Time
 t=u(40);
 
-%target
-x1=u(50);
-x2=u(51);
-x3=u(52);
-x4=deg2rad(u(53));
-x5=deg2rad(u(54));
-x6=deg2rad(u(55));
 
 % Specify the Robot Base (with respect to the world coordinate frame in ROS)
-T0_W=eye(4)*[-1 0 0 0;0 -1 0 0;0 0 1 0;0 0 0 1];
+T0_W=eye(4);
+%T0_W=[-1 0 0 0; 0 -1 0 0; 0 0 1 0; 0 0 0 1];
 
 % Compute the Homogeneous Transformations
 
@@ -52,10 +46,10 @@ T2_1=[  sin(q2), -cos(q2),  0,  L3*sin(q2);
               0,        0, -1,          L7;
               0,        0,  0,           1];
 
-T3_2=[  sin(q3), 0, -cos(q3),        0;
-       -cos(q3), 0, -sin(q3),        0;
-              0, 1,        0, L7 - L11;
-              0, 0,        0,        1];
+T3_2=[ cos(q3), -sin(q3), 0,  -L5*cos(q3);
+       sin(q3),  cos(q3), 0,  -L5*sin(q3);
+             0,        0, 1, L7 - L4 - L2;
+             0,        0, 0,            1];
 
 Tcm1_0=[ cos(q1), -sin(q1), 0,  0;
          sin(q1),  cos(q1), 0,  0;
@@ -87,16 +81,24 @@ T3_W=T0_W*T3_0;
 Tcm1_W=T0_W*Tcm1_0;
 Tcm2_W=T0_W*Tcm2_0;
 Tcm3_W=T0_W*Tcm3_0;
-
-Rt_0=[cos(x6),-sin(x6),0;
-    sin(x6),cos(x6),0;
-    0 0 1]*[cos(x5),0,sin(x5);
-            0 1 0;
-            -sin(x5),0,cos(x5)]*[1,0,0;0,cos(x4),-sin(x4);0,sin(x4),cos(x4)]*;
-Rt_w=T0_w(1:3,1:3)*Rt_0;
-tt_w=[-x1;-x2;x3];
-T_target=[Rt_w,tt_w;0 0 0 1];
-
+%****************************************************
+% Get the inverse Transformation(Transformation from
+% header to child). (inverse mapping.)
+TW_0=[T0_W(1:3,1:3)' -T0_W(1:3,1:3)'*T0_W(1:3,4);...
+      0 0 0 1];
+T0_1=[T1_0(1:3,1:3)' -T1_0(1:3,1:3)'*T1_0(1:3,4);...
+      0 0 0 1];
+T0_2=[T2_0(1:3,1:3)' -T2_0(1:3,1:3)'*T2_0(1:3,4);...
+      0 0 0 1];  
+T0_3=[T3_0(1:3,1:3)' -T3_0(1:3,1:3)'*T3_0(1:3,4);...
+      0 0 0 1];    
+T0_cm1=[Tcm1_0(1:3,1:3)' -Tcm1_0(1:3,1:3)'*Tcm1_0(1:3,4);...
+        0 0 0 1];  
+T0_cm2=[Tcm2_0(1:3,1:3)' -Tcm2_0(1:3,1:3)'*Tcm2_0(1:3,4);...
+        0 0 0 1];      
+T0_cm3=[Tcm3_0(1:3,1:3)' -Tcm3_0(1:3,1:3)'*Tcm3_0(1:3,4);...
+        0 0 0 1];      
+%****************************************************
 % Get the position of the end-effector
 Xef_W=[T3_W(1:3,4);R2EulerA(T3_W(1:3,1:3))];
 
@@ -111,41 +113,35 @@ if t<0.05 %depend on the fixed step size
     tfStampedMsgcm1 = rosmessage('geometry_msgs/TransformStamped');
     tfStampedMsgcm2 = rosmessage('geometry_msgs/TransformStamped');
     tfStampedMsgcm3 = rosmessage('geometry_msgs/TransformStamped');
-    tfStampedMsgtar = rosmessage('geometry_msgs/TransformStamped');
     
     % Build the tf tree
     % H0_W
     tfStampedMsg.ChildFrameId = 'TF0'; %0
     tfStampedMsg.Header.FrameId = 'world'; %W
     
-    % H1_w
+    % H1_0
     tfStampedMsg1.ChildFrameId = 'TF1'; %1
-    tfStampedMsg1.Header.FrameId = 'TF0';%0
+    tfStampedMsg1.Header.FrameId ='TF0';%0
     
-    % H2_w
+    % H2_0
     tfStampedMsg2.ChildFrameId = 'TF2';
-    tfStampedMsg2.Header.FrameId = 'TF1';
+    tfStampedMsg2.Header.FrameId = 'TF0';
     
-    % H3_w
+    % H3_0
     tfStampedMsg3.ChildFrameId = 'TF3';
-    tfStampedMsg3.Header.FrameId = 'TF2';
+    tfStampedMsg3.Header.FrameId = 'TF0';
     
-    %Hcm1_w
+    %Hcm1_0
     tfStampedMsgcm1.ChildFrameId = 'TFcm1';
-    tfStampedMsgcm1.Header.FrameId = 'TF0';
+    tfStampedMsgcm1.Header.FrameId ='TF0';
     
-    %Hcm2_w
+    %Hcm2_0
     tfStampedMsgcm2.ChildFrameId = 'TFcm2';
-    tfStampedMsgcm2.Header.FrameId = 'TF1';
+    tfStampedMsgcm2.Header.FrameId = 'TF0';
     
-    %Hcm3_w
+    %Hcm3_0
     tfStampedMsgcm3.ChildFrameId = 'TFcm3';
-    tfStampedMsgcm3.Header.FrameId = 'TF2';
-    
-    %target
-    tfStampedMsgtar.ChildFrameId = 'TFtarget';
-    tfStampedMsgtar.Header.FrameId = 'world';
-    
+    tfStampedMsgcm3.Header.FrameId = 'TF0';  
     % Joint State Publisher
     jointpub = rospublisher('/ursa_joint_states','sensor_msgs/JointState');
     jointmsg = rosmessage(jointpub); 
@@ -178,26 +174,26 @@ end
 %% TF MSG
     tfStampedMsg.Header.Stamp = rostime('now');
     tfStampedMsg.Header.Seq=counter;
-    tfStampedMsg.Transform.Translation.X = double(T0_W(1,4));
-    tfStampedMsg.Transform.Translation.Y = double(T0_W(2,4));
-    tfStampedMsg.Transform.Translation.Z = double(T0_W(3,4));
+    tfStampedMsg.Transform.Translation.X = TW_0(1,4);
+    tfStampedMsg.Transform.Translation.Y = TW_0(2,4);
+    tfStampedMsg.Transform.Translation.Z = TW_0(3,4);
 
-    rotm = double(T0_W(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
-    tfStampedMsg.Transform.Rotation.W = quatrot(1);
-    tfStampedMsg.Transform.Rotation.X = quatrot(2);
-    tfStampedMsg.Transform.Rotation.Y = quatrot(3);
-    tfStampedMsg.Transform.Rotation.Z = quatrot(4);
+     rotm = TW_0(1:3,1:3);
+     quatrot = rotm2quat(rotm);
+     tfStampedMsg.Transform.Rotation.W = quatrot(1);
+     tfStampedMsg.Transform.Rotation.X = quatrot(2);
+     tfStampedMsg.Transform.Rotation.Y = quatrot(3);
+     tfStampedMsg.Transform.Rotation.Z = quatrot(4);
     sendTransform(tftree, tfStampedMsg);
     %************************************************************
     tfStampedMsg1.Header.Stamp = rostime('now');
     tfStampedMsg1.Header.Seq=counter;
-    tfStampedMsg1.Transform.Translation.X = double(T1_0(1,4));
-    tfStampedMsg1.Transform.Translation.Y = double(T1_0(2,4));
-    tfStampedMsg1.Transform.Translation.Z = double(T1_0(3,4));
+    tfStampedMsg1.Transform.Translation.X = T1_0(1,4);
+    tfStampedMsg1.Transform.Translation.Y = T1_0(2,4);
+    tfStampedMsg1.Transform.Translation.Z = T1_0(3,4);
 
-    rotm = double(T1_0(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = T1_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsg1.Transform.Rotation.W = quatrot(1);
     tfStampedMsg1.Transform.Rotation.X = quatrot(2);
     tfStampedMsg1.Transform.Rotation.Y = quatrot(3);
@@ -206,12 +202,12 @@ end
     %************************************************************
     tfStampedMsg2.Header.Stamp = rostime('now');
     tfStampedMsg2.Header.Seq=counter;
-    tfStampedMsg2.Transform.Translation.X = double(T2_1(1,4));
-    tfStampedMsg2.Transform.Translation.Y = double(T2_1(2,4));
-    tfStampedMsg2.Transform.Translation.Z = double(T2_1(3,4));
+    tfStampedMsg2.Transform.Translation.X = T2_0(1,4);
+    tfStampedMsg2.Transform.Translation.Y = T2_0(2,4);
+    tfStampedMsg2.Transform.Translation.Z = T2_0(3,4);
 
-    rotm = double(T2_1(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = T2_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsg2.Transform.Rotation.W = quatrot(1);
     tfStampedMsg2.Transform.Rotation.X = quatrot(2);
     tfStampedMsg2.Transform.Rotation.Y = quatrot(3);
@@ -221,12 +217,12 @@ end
     
     tfStampedMsg3.Header.Stamp = rostime('now');
     tfStampedMsg3.Header.Seq=counter;
-    tfStampedMsg3.Transform.Translation.X = double(T3_2(1,4));
-    tfStampedMsg3.Transform.Translation.Y = double(T3_2(2,4));
-    tfStampedMsg3.Transform.Translation.Z = double(T3_2(3,4));
+    tfStampedMsg3.Transform.Translation.X = T3_0(1,4);
+    tfStampedMsg3.Transform.Translation.Y = T3_0(2,4);
+    tfStampedMsg3.Transform.Translation.Z = T3_0(3,4);
 
-    rotm = double(T3_2(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = T3_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsg3.Transform.Rotation.W = quatrot(1);
     tfStampedMsg3.Transform.Rotation.X = quatrot(2);
     tfStampedMsg3.Transform.Rotation.Y = quatrot(3);
@@ -236,12 +232,12 @@ end
        
     tfStampedMsgcm1.Header.Stamp = rostime('now');
     tfStampedMsgcm1.Header.Seq=counter;
-    tfStampedMsgcm1.Transform.Translation.X = double(Tcm1_0(1,4));
-    tfStampedMsgcm1.Transform.Translation.Y = double(Tcm1_0(2,4));
-    tfStampedMsgcm1.Transform.Translation.Z = double(Tcm1_0(3,4));
+    tfStampedMsgcm1.Transform.Translation.X = Tcm1_0(1,4);
+    tfStampedMsgcm1.Transform.Translation.Y = Tcm1_0(2,4);
+    tfStampedMsgcm1.Transform.Translation.Z = Tcm1_0(3,4);
 
-    rotm = double(Tcm1_0(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = Tcm1_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsgcm1.Transform.Rotation.W = quatrot(1);
     tfStampedMsgcm1.Transform.Rotation.X = quatrot(2);
     tfStampedMsgcm1.Transform.Rotation.Y = quatrot(3);
@@ -251,12 +247,12 @@ end
     
     tfStampedMsgcm2.Header.Stamp = rostime('now');
     tfStampedMsgcm2.Header.Seq=counter;
-    tfStampedMsgcm2.Transform.Translation.X = double(Tcm2_1(1,4));
-    tfStampedMsgcm2.Transform.Translation.Y = double(Tcm2_1(2,4));
-    tfStampedMsgcm2.Transform.Translation.Z = double(Tcm2_1(3,4));
+    tfStampedMsgcm2.Transform.Translation.X = Tcm2_0(1,4);
+    tfStampedMsgcm2.Transform.Translation.Y = Tcm2_0(2,4);
+    tfStampedMsgcm2.Transform.Translation.Z = Tcm2_0(3,4);
 
-    rotm = double(Tcm2_1(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = Tcm2_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsgcm2.Transform.Rotation.W = quatrot(1);
     tfStampedMsgcm2.Transform.Rotation.X = quatrot(2);
     tfStampedMsgcm2.Transform.Rotation.Y = quatrot(3);
@@ -266,32 +262,18 @@ end
     
     tfStampedMsgcm3.Header.Stamp = rostime('now');
     tfStampedMsgcm3.Header.Seq=counter;
-    tfStampedMsgcm3.Transform.Translation.X = double(Tcm3_2(1,4));
-    tfStampedMsgcm3.Transform.Translation.Y = double(Tcm3_2(2,4));
-    tfStampedMsgcm3.Transform.Translation.Z = double(Tcm3_2(3,4));
+    tfStampedMsgcm3.Transform.Translation.X = Tcm3_0(1,4);
+    tfStampedMsgcm3.Transform.Translation.Y = Tcm3_0(2,4);
+    tfStampedMsgcm3.Transform.Translation.Z = Tcm3_0(3,4);
 
-    rotm = double(Tcm3_2(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
+    rotm = Tcm3_0(1:3,1:3);
+    quatrot = rotm2quat(rotm);
     tfStampedMsgcm3.Transform.Rotation.W = quatrot(1);
     tfStampedMsgcm3.Transform.Rotation.X = quatrot(2);
     tfStampedMsgcm3.Transform.Rotation.Y = quatrot(3);
     tfStampedMsgcm3.Transform.Rotation.Z = quatrot(4);
     sendTransform(tftree, tfStampedMsgcm3);
     %************************************************************    
-    tfStampedMsgtar.Header.Stamp = rostime('now');
-    tfStampedMsgtar.Header.Seq=counter;
-    tfStampedMsgtar.Transform.Translation.X = double(T_target(1,4));
-    tfStampedMsgtar.Transform.Translation.Y = double(T_target(2,4));
-    tfStampedMsgtar.Transform.Translation.Z = double(T_target(3,4));
-
-    rotm = double(T_target(1:3,1:3));
-    quatrot = rotm2quat(rotm);%四元数表示一个旋转，
-    tfStampedMsgtar.Transform.Rotation.W = quatrot(1);
-    tfStampedMsgtar.Transform.Rotation.X = quatrot(2);
-    tfStampedMsgtar.Transform.Rotation.Y = quatrot(3);
-    tfStampedMsgtar.Transform.Rotation.Z = quatrot(4);
-    sendTransform(tftree, tfStampedMsgtar);
-    %************************************************************  
     %Use the above example to plot the TF of each joint and each center 
     %of mass using the Homogenous transformations obtained from 
     %D-H parameters. You will need the joint positions which are generated
