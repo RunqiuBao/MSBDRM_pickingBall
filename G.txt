@@ -1,6 +1,8 @@
-                                                                                                                                                                                                                                                                                                                      0;
- g*m5*(a3*cos(q2 + q3) + a2*cos(q2) + dcm5*sin(q2 + q3 + q4) + acm5*cos(q2 + q3 + q4)*sin(q5)) + g*m6*(a3*cos(q2 + q3) + a2*cos(q2) + d5*sin(q2 + q3 + q4) - dcm6*cos(q2 + q3 + q4)*sin(q5)) + g*m4*(a3*cos(q2 + q3) + a2*cos(q2) - acm4*sin(q2 + q3 + q4)) + g*m3*(acm3*cos(q2 + q3) + a2*cos(q2)) + acm2*g*m2*cos(q2);
-                                                                           g*m5*(a3*cos(q2 + q3) + dcm5*sin(q2 + q3 + q4) + acm5*cos(q2 + q3 + q4)*sin(q5)) + g*m6*(a3*cos(q2 + q3) + d5*sin(q2 + q3 + q4) - dcm6*cos(q2 + q3 + q4)*sin(q5)) + g*m4*(a3*cos(q2 + q3) - acm4*sin(q2 + q3 + q4)) + acm3*g*m3*cos(q2 + q3);
-                                                                                                                                                            g*m5*(dcm5*sin(q2 + q3 + q4) + acm5*cos(q2 + q3 + q4)*sin(q5)) + g*m6*(d5*sin(q2 + q3 + q4) - dcm6*cos(q2 + q3 + q4)*sin(q5)) - acm4*g*m4*sin(q2 + q3 + q4);
-                                                                                                                                                                                                                                                                        g*sin(q2 + q3 + q4)*cos(q5)*(acm5*m5 - dcm6*m6);
-                                                                                                                                                                                                                                                                                                                      0;
+                                                                                                                                                            0;
+ (580027041*sin(q2 + q3 + q4))/200000000 - (7685174601*cos(q2 + q3))/200000000 - (403731531*cos(q2))/5000000 - (59019903*cos(q2 + q3 + q4)*sin(q5))/100000000;
+                               (580027041*sin(q2 + q3 + q4))/200000000 - (7685174601*cos(q2 + q3))/200000000 - (59019903*cos(q2 + q3 + q4)*sin(q5))/100000000;
+                                                                     (580027041*sin(q2 + q3 + q4))/200000000 - (59019903*cos(q2 + q3 + q4)*sin(q5))/100000000;
+                                                                                                              -(59019903*sin(q2 + q3 + q4)*cos(q5))/100000000;
+                                                                                                                                                            0;
+ 
+
