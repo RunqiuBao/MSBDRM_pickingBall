@@ -1,0 +1,11 @@
+diary on
+H6_0
+ 
+H6_0 =
+ 
+[   cos(q6)*(sin(q1)*sin(q5) + cos(q2 + q3 + q4)*cos(q1)*cos(q5)) - sin(q2 + q3 + q4)*cos(q1)*sin(q6), - sin(q6)*(sin(q1)*sin(q5) + cos(q2 + q3 + q4)*cos(q1)*cos(q5)) - sin(q2 + q3 + q4)*cos(q1)*cos(q6),   cos(q5)*sin(q1) - cos(q2 + q3 + q4)*cos(q1)*sin(q5), (1476649253021493*sin(q1))/9007199254740992 + (461*cos(q5)*sin(q1))/5000 + (1157*sin(q2 + q3 + q4)*cos(q1))/10000 - cos(q1)*((5723*cos(q2 + q3))/10000 + (153*cos(q2))/250) - (461*cos(q2 + q3 + q4)*cos(q1)*sin(q5))/5000]
+[ - cos(q6)*(cos(q1)*sin(q5) - cos(q2 + q3 + q4)*cos(q5)*sin(q1)) - sin(q2 + q3 + q4)*sin(q1)*sin(q6),   sin(q6)*(cos(q1)*sin(q5) - cos(q2 + q3 + q4)*cos(q5)*sin(q1)) - sin(q2 + q3 + q4)*cos(q6)*sin(q1), - cos(q1)*cos(q5) - cos(q2 + q3 + q4)*sin(q1)*sin(q5), (1157*sin(q2 + q3 + q4)*sin(q1))/10000 - (461*cos(q1)*cos(q5))/5000 - (1476649253021493*cos(q1))/9007199254740992 - sin(q1)*((5723*cos(q2 + q3))/10000 + (153*cos(q2))/250) - (461*cos(q2 + q3 + q4)*sin(q1)*sin(q5))/5000]
+[                                       cos(q2 + q3 + q4)*sin(q6) + sin(q2 + q3 + q4)*cos(q5)*cos(q6),                                       cos(q2 + q3 + q4)*cos(q6) - sin(q2 + q3 + q4)*cos(q5)*sin(q6),                            -sin(q2 + q3 + q4)*sin(q5),                                                                                         1273/10000 - (5723*sin(q2 + q3))/10000 - (153*sin(q2))/250 - (461*sin(q2 + q3 + q4)*sin(q5))/5000 - (1157*cos(q2 + q3 + q4))/10000]
+[                                                                                                   0,                                                                                                   0,                                                     0,                                                                                                                                                                                                                          1]
+ 
+diary off
